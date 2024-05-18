@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 매퍼 파일 : member 테이블 SQL문을 관리하는 파일 -->	
+
+<mapper namespace="MemberDAO">
+
+	<resultMap type="member" id="memberResult">
+		<id property="member_id" column="member_id"/>
+		<result property="pwd" column="pwd"/>
+		<result property="member_name" column="member_name"/>
+		<result property="birthday" column="birthday"/>
+		<result property="gender" column="gender"/>
+		<result property="email" column="email"/>
+		<result property="tel" column="tel"/>
+		<result property="address1" column="address1"/>
+		<result property="address2" column="address2"/>
+		<result property="reg_date" column="reg_date"/>
+	</resultMap>
+
+	<!-- 로그인-->
+	<select id="login" resultMap="memberResult">
+		<![CDATA[
+		select * from member 
+		where member_id=#{member_id} and pwd=#{pwd}
+		]]>
+	</select>
+	
+	<!-- 회원 등록 -->
+	<insert id="insertMember">
+		<![CDATA[
+		insert into member value(member_id, pwd, member_name, birthday, gender, email, tel, address1, address2) 
+		values(#{member_id}, #{pwd}, #{member_name}, #{birthday}, #{gender},#{email}, #{tel}, #{address1}, #{address2})
+		]]>
+	</insert>
+
+	<!-- 회원 수정 -->
+	<update id="updateMember">
+		<![CDATA[
+		update member set
+		pwd=#{pwd}, member_name=#{member_name}, birthday=#{birthday}, gender=#{gender}, email=#{email}, tel=#{tel}, address1=#{address1}, address2=#{address2}
+		where member_id=#{member_id}
+		]]>
+	</update>
+
+	<!-- 회원 삭제(탈퇴) -->
+	<delete id="deleteMember">
+		<![CDATA[
+		delete from member 
+		where member_id=#{member_id}
+		]]>
+	</delete>
+	
+	<!--  회원 상세 보기(1건)  -->
+	<select id="getMember" resultMap="memberResult">
+		<![CDATA[
+		select * from member 
+		where member_id=#{member_id}
+		]]>
+	</select>
+	
+	<!--  아이디 중복 체크  -->
+	<select id="getMemberIdCheck" resultMap="memberResult">
+		<![CDATA[
+		select * from member 
+		where member_id=#{member_id}
+		]]>
+	</select>
+
+</mapper>

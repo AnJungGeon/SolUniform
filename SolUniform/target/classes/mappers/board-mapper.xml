@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 매퍼 파일 : board 테이블 SQL문을 관리하는 파일 -->					
+
+<!-- 
+1. BoardDAO 클래스의 insertBoard() 메소드
+   mybatis.insert("BoardDAO.insertBoard", vo);
+- BoardDAO 부분이 mapper 태그의 namespace와 연결
+- . 다음의 insertBoard 부분이 insert 태그의 id와 연결
+- vo에 담겨있는 멤버변수의 값이 #{}의 값으로 연결
+
+2. select문은 리턴값이 존재함.
+- resultMap 태그를 생성하여 설정
+- resultMap 태그의 id가 select 태그의 resultMap과 연결
+- resultMap 태그에서는 property(VO클래스의 멤버변수명)와 column(테이블 필드명)을 매핑
+- 테이블에서 primary key로 지정된 컬럼은 id 태그로 설정함
+
+3. mapper 파일에서 sql문을 사용할 때의 문제점
+- 태그 안에서 where절의 >, < 연산자를 사용할 수 없음.
+- 해결책: CDATA section으로 SQL문을 감싸서 사용, Character DATA
+
+4. Dynamic SQL 
+- SQL에서 선택적으로 실행할 내용을 구현하기 위해서 Mybatis에서 제공하는 문법
+- 주의: CDATA와 함께 사용할 수 없음.
+-->
+
+<mapper namespace="BoardDAO">
+	
+	<!-- 글 추가 -->
+	<insert id="insertBoard">
+		<![CDATA[
+		insert into board(seq, title, writer, content) values(board_seq.nextval, #{title}, #{writer}, #{content})
+		]]>
+	</insert>
+
+	<!-- 글 수정 -->
+	<update id="updateBoard">
+		<![CDATA[
+		update board set title=#{title}, content=#{content} where seq=#{seq}
+		]]>
+	</update>
+
+	<!-- 글 삭제 -->
+	<delete id="deleteBoard">
+		<![CDATA[
+		delete from board where seq=#{seq}
+		]]>
+	</delete>
+	
+	<!-- 글 조회수 증가 -->
+	<update id="updateBoardCnt">
+		<![CDATA[
+		update board set cnt=cnt+1 where seq=#{seq}
+		]]>
+	</update>
+	
+	<!-- getBoard, getBoardList에서 사용할 리턴값에 대한 설정 -->
+	<resultMap type="board" id="boardResult">
+		<id property="seq" column="seq"/>
+		<result property="title" column="title"/>
+		<result property="writer" column="writer"/>
+		<result property="content" column="content"/>
+		<result property="regdate" column="regdate"/>
+		<result property="cnt" column="cnt"/>
+	</resultMap>
+	
+	<!-- 글 상세 보기 (1건) -->
+	<select id="getBoard" resultMap="boardResult">
+		<![CDATA[
+		select * from board where seq=#{seq}
+		]]>
+	</select>
+	
+	<!-- 글 목록 보기 (전체) : 검색 기능 -->
+	<!-- Dynamic SQL (동적 SQL) 적용 -->
+	<select id="getBoardList" resultMap="boardResult">
+		select * from board where 1 = 1
+		<if test="searchCondition == 'TITLE'">
+		and title like '%'||#{searchKeyword}||'%'
+		</if>
+		<if test="searchCondition == 'CONTENT'">
+		and content like '%'||#{searchKeyword}||'%'
+		</if>
+		<if test="searchCondition == 'WRITER'">
+		and writer like '%'||#{searchKeyword}||'%'
+		</if>
+		order by seq desc
+	</select>
+	
+</mapper>

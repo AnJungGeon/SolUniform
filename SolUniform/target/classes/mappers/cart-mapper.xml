@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 매퍼 파일 : member 테이블 SQL문을 관리하는 파일 -->	
+
+<mapper namespace="CartDAO">
+
+	<resultMap type="cart" id="cartResult">
+		<id property="cart_id" column="cart_id"/>
+		<result property="buyer" column="buyer"/>
+		<result property="product_id" column="product_id"/>
+		<result property="product_name" column="product_name"/>
+		<result property="product_imageF" column="product_imageF"/>
+		<result property="product_price" column="product_price"/>
+		<result property="discount_rate" column="discount_rate"/>
+		<result property="buy_price" column="buy_price"/>
+		<result property="buy_count" column="buy_count"/>
+	</resultMap>
+
+
+	<!-- 카트 추가 -->
+	<insert id="insertCart">
+		<![CDATA[
+		insert into cart
+		values(cart_seq.nextval,#{buyer},#{product_id},#{product_name},#{product_imageF},#{product_price},#{discount_rate},#{buy_price},#{buy_count})
+		]]>
+	</insert>
+
+	<!-- 카트 수정 - 구매 수량 변경 -->
+	<update id="updateCart">
+		<![CDATA[
+		update cart
+		set buy_count = #{buy_count}
+		where cart_id= #{cart_id}
+		]]>
+	</update>
+
+	<!-- 카트 삭제(1개) -->
+	<delete id="deleteCartOne">
+		<![CDATA[
+		delete from cart
+		where cart_id = #{cart_id}
+		]]>
+	</delete>
+
+	
+	<!-- 카트 삭제(여러개 또는 전체) -->
+	<delete id="deleteCartAll" parameterType="java.util.List">
+		delete from cart 
+		where cart_id in
+		<foreach collection="list" index="index" item="cart_id" open="(" close= ")" separator="," >
+			#{cart_id}
+		</foreach>
+		
+	</delete>
+	
+
+	
+	<!--  카트 목록  -->
+	<select id="getCartList" resultMap="cartResult">
+		<![CDATA[
+		select * from cart
+		where buyer = #{buyer}
+		order by cart_id desc
+		]]>
+	</select>
+	
+		<!--  카트상품 확인 : shopContent 장바구니 추가 버튼 -->
+
+	<select id="getCart" resultMap="cartResult">
+		<![CDATA[
+		select * from cart
+			where buyer = #{buyer}
+			and product_id = #{product_id}
+		]]>				
+	</select>
+
+	<!-- 결제폼 : getCartList.jsp 주문 버튼  (1개 , 여러 개, 전체) -->
+	<select id="getCartIdList" resultMap="cartResult">
+		select * from cart
+		where cart_id in
+		<foreach collection="list" index="index" item="cart_id" open="(" close=")" separator=",">
+			#{cart_id}
+		</foreach>
+		
+	</select>
+	
+	<!-- 카트 리트 삭제 insertBuy 트랜잭션 처리 -->
+	<delete id="deleteCartList">
+		delete from cart
+		where cart_id in
+		<foreach collection="list" index="index" item="cart" open="(" close=")" separator=",">
+			#{cart.cart_id}
+		</foreach>
+	</delete>
+
+
+</mapper>

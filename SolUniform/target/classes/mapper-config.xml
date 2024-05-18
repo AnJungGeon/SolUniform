@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- MyBatis 환경 설정 파일 -->	
+
+<configuration>
+
+	<!-- 객체 alias 설정 -->
+	<typeAliases>
+		<typeAlias alias="product" type="com.soluniform.biz.product.ProductVO"/>
+		<typeAlias alias="member" type="com.soluniform.biz.member.MemberVO"/>
+		<typeAlias alias="cart" type="com.soluniform.biz.cart.CartVO"/>
+				<typeAlias alias="bank" type="com.soluniform.biz.bank.BankVO"/>
+		 <typeAlias alias="buy" type="com.soluniform.biz.buy.BuyVO"/>
+	</typeAliases>
+
+	<!-- SQL Mapper 파일 설정 -->
+	<mappers>
+		<mapper resource="mappers/product-mapper.xml"/>
+		<mapper resource="mappers/member-mapper.xml"/>
+		<mapper resource="mappers/cart-mapper.xml"/>
+		 <mapper resource="mappers/buy-mapper.xml"/>
+		<mapper resource="mappers/bank-mapper.xml"/>
+	</mappers>
+
+</configuration>					

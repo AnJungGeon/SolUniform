@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+						
+<mapper namespace="ProductDAO">
+	
+	<resultMap type="product" id="productResult">
+		<id property ="product_id" column="product_id"/>
+		<result property="league_kind" column="league_kind"/>
+		<result property="product_kind" column="product_kind"/>
+		<result property="product_name" column="product_name"/>
+		<result property="product_price" column="product_price"/>
+		<result property="product_count" column="product_count"/>
+		<result property="brand_name" column="brand_name"/>
+		<result property="made_country" column="made_country"/>
+		<result property="product_imageAll" column="product_imageAll"/>
+		<result property="product_image" column="product_image"/>
+		<result property="product_imageB" column="product_imageB"/>
+		<result property="size_chart" column="size_chart"/>
+		<result property="discount_rate" column="discount_rate"/>
+		<result property="reg_date" column="reg_date"/>
+	</resultMap>
+
+	<!--shopMain.jsp - 신상품 목록(bxSlider) - 각 리그 분류별로 최신상품 2개씩 저정(6*2 =12) -->
+	<select id ="getProductListNew" resultMap="productResult">
+		<![CDATA[
+		select * from (select p.*, row_number() over(partition by league_kind  order by reg_date desc) as rnum from product p)
+		 where rnum <= #{kind_count}
+		]]>
+		
+	</select>
+	<!--shopMain.jsp 추천상품 목록(bxSlider) - 각 리그별로 할인률순으로 3개씩 저정(6*3 =18) -->
+	<select id ="getProductListGood" resultMap="productResult">
+		<![CDATA[
+		select * from (select p.*, row_number() over(partition by league_kind  order by discount_rate desc) as rnum from product p)
+		 where rnum <= #{kind_count}
+		]]>	
+	</select>
+
+	<!-- shopContent.jsp : 같은 상품분류 할인률순 10개 -->
+	<select id ="getProductListRecom" resultMap="productResult">
+		<![CDATA[
+		select * from (
+		select p.*, row_number() over(order by discount_rate desc) as rnum from product p
+		where product_kind = #{product_kind}
+		) where rnum <= #{kind_count}
+		]]>
+	</select>
+
+	<!-- shopContent.jsp : 같은 리그 신상품 10개 -->
+	<select id ="getLeagueListNew" resultMap="productResult">
+		<![CDATA[
+		select * from (
+		select p.*, row_number() over (order by reg_date desc) as rnum from product p
+		where league_kind = #{league_kind}
+		) where rnum <= #{kind_count}
+		]]>
+	</select>
+		
+	<!--shopTop.jsp - 최신상품 메뉴  -->
+	<select id ="getProductMenuNew" resultMap="productResult">
+		<![CDATA[
+		select * from (select p.*, row_number() over(order by reg_date desc) as rnum from product p )
+		 where rnum >=#{startRow} and rnum <= #{endRow} 
+		]]>
+		
+	</select>
+	
+	<!-- shopTop.jsp - 추천상품 메뉴  -->
+		<select id ="getProductMenuGood" resultMap="productResult">
+		<![CDATA[
+		select * from (select p.*, row_number() over( order by discount_rate desc) as rnum from product p )
+		 where rnum >=#{startRow} and rnum <= #{endRow}
+		]]>
+	</select>
+	
+	<!--shopTop.jsp - 신상품 메뉴 개수  -->
+	<select id ="getProductMenuNewCount" resultType="int">
+		<![CDATA[
+		select count(*) from (select p.*, row_number() over( order by reg_date desc) as rnum from product p )
+		]]>
+		
+	</select>
+	
+	<!-- shopTop.jsp - 추천상품 메뉴 개수  -->
+		<select id ="getProductMenuGoodCount" resultType="int">
+		<![CDATA[
+		select count(*) from (select p.*, row_number() over(order by discount_rate desc) as rnum from product p )
+		]]>
+	</select>
+	
+	
+	
+	<!-- 상품 분류 및 전체 목록 -->
+	<select id ="getLeagueListKind" resultMap="productResult">
+		<![CDATA[
+			select * from (select p.*, row_number() over(order by reg_date desc) as rnum from product p where 1 = 1
+			]]>
+			<if test="league_kind != '000'">
+			and p.league_kind=#{league_kind}
+			</if>
+			<![CDATA[
+			 ) where rnum >=#{startRow} and rnum <= #{endRow} 
+		]]>
+		
+	</select>
+	
+	<!-- 리그 분류 및 전체 목록 개수-->
+	<select id ="getLeagueListKindCount" resultType="int">
+	<![CDATA[
+			select count(*) from (select p.*, row_number() over(order by reg_date desc) as rnum from product p where 1 = 1
+			]]>
+			<if test="league_kind != '000'">
+			and p.league_kind=#{league_kind}
+			</if>
+			<![CDATA[
+			 )
+		]]>
+		
+	</select>
+	
+	
+		<!-- 상품 검색 12개씩 페이징 -->
+	<select id ="getProductSearch" resultMap="productResult">
+		<![CDATA[
+			select * from (select p.*, row_number() over(order by reg_date desc) as rnum from product p 
+			where product_name like '%'||#{keyword}||'%'
+			or brand_name like '%'||#{keyword}||'%'
+			 ) where rnum >=#{startRow} and rnum <= #{endRow} 
+		]]>
+		 
+	</select>
+	
+	<!-- 상품 분류 및 전체 목록 개수-->
+	<select id ="getProductSearchCount" resultType="int">
+	<![CDATA[
+			select count(*) from (select p.*, row_number() over(order by reg_date desc) as rnum from product p 
+			where product_name like '%'||#{keyword}||'%'
+			or brand_name like '%'||#{keyword}||'%'
+			)
+		]]>
+	</select>
+	
+	<!--상품 상세 (1건) -->
+	<select id ="getProduct" resultMap="productResult">
+		<![CDATA[
+			select * from product where product_id = #{product_id}
+		]]>
+		
+	</select>
+	
+		<!-- insertBuy: 트랜잭션 처리 -->
+	<update id="updateProductCount">
+		<foreach collection="list" index="index" item="buy" open="declare begin" close="; end;" separator=";">
+			update product
+			set product_count = product_count - #{buy.buy_count}
+			where product_id = #{buy.product_id}
+		</foreach>
+	</update>
+	
+
+</mapper>

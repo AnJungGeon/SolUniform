@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+						"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+			
+<mapper namespace="BuyDAO">						
+
+<resultMap type="buy" id="buyResult">
+		<result property="buy_id" column="buy_id"/>
+		<result property="buyer" column="buyer"/>
+		<result property="product_name" column="product_name"/>
+		<result property="product_imageF" column="product_imageF"/>
+		<result property="buy_price" column="buy_price"/>
+		<result property="buy_count" column="buy_count"/>
+		<result property="buy_date" column="buy_date"/>
+		<result property="account" column="account"/>
+		<result property="delivery_name" column="delivery_namee"/>
+		<result property="delivery_tel" column="delivery_tel"/>
+		<result property="delivery_address1" column="delivery_address1"/>
+		<result property="delivery_address2" column="delivery_address2"/>
+		<result property="delivery_state" column="delivery_state"/>
+</resultMap>
+
+
+	<!-- 구매 목록 추가 -->
+	<insert id="insertBuy" >
+		<foreach collection="list" index="index" item="buy" separator=" " open="insert all" close="select * from dual">
+	 	into buy(buy_id, buyer, product_id, product_name, product_imageF, buy_price, buy_count, account, delivery_name, delivery_tel, delivery_address1, delivery_address2)
+	 	values(#{buy.buy_id}, #{buy.buyer}, #{buy.product_id}, #{buy.product_name}, #{buy.product_imageF}, #{buy.buy_price}, #{buy.buy_count},
+	 		   #{buy.account}, #{buy.delivery_name}, #{buy.delivery_tel}, #{buy.delivery_address1},#{buy.delivery_address2})
+		</foreach>
+	</insert>
+	<!-- 구매 목록 조회: 구매자에 대해 구매 아이디별로 1건씩 조회 -->
+	<select id="getBuyList" resultMap="buyResult">
+		<![CDATA[
+		select * from (select b.* , row_number() over (partition by buy_id order by buy_date desc) as rn from buy b where buyer=#{member_id})
+		rank where rank.rn < = 1
+		]]>
+	</select>
+	<!-- 구매자의 구매아이디별 구매 상품 종류 개수 -->
+	<select id="getBuyIdCount" resultType="int" >
+	<![CDATA[
+		select count(*) from buy where buy_id = #{buy_id}
+	]]>
+	</select>
+	<!--  구매자의 구매아이디별 구매 상품 합계-->
+	<select id="getBuyIdSum" resultType="int">
+	<![CDATA[
+		select sum(buy_price) from buy where buy_id = #{buy_id}
+	]]>
+	</select>
+	
+	<!--  상품 아이디 상세 -->
+	<select id="getBuyDetail" resultMap="buyResult">
+	<![CDATA[
+		select * from buy where buy_id = #{buy_id}
+	]]>
+	</select>
+	
+	<!-- 구매일자 조회 -->
+	<select id="getBuyListSearch" resultMap = "buyResult">
+		<![CDATA[
+		select * from (
+		select b.* , row_number() over (partition by buy_id order by buy_date desc) as rn from buy b 
+		where buyer=#{buyer} and buy_date between #{start_date} and #{end_date}) rank 
+		where rank.rn < = 1
+		order by buy_date desc
+		]]>	
+	</select>
+</mapper>
